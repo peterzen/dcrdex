@@ -1,0 +1,116 @@
+version: '3.7'
+services:
+  dcrd:
+    # build:
+      # context: dcrd
+    image: decred/dcrd
+    hostname: dcrd
+    networks:
+      bridge:
+    ports:
+      - 19108:19108
+      - 19109:19109
+    volumes:
+      - dcrd_testnet:/root/.dcrd/
+    entrypoint: 
+      - dcrd
+      - "--testnet"
+      - "--nobanning"
+      - "--rpcuser=dcrd"
+      - "--rpcpass=changeme"
+      - "--rpclisten=0.0.0.0"
+
+  dcrdex_server:
+    build:
+      context: ./
+      dockerfile: server/Dockerfile
+    hostname: dcrdex_server
+    networks:
+      bridge:
+    links:
+      - dcrd
+
+  bitcoind:
+    image: peterzen/bitcoind
+    restart: unless-stopped
+    hostname: bitcoind
+    networks:
+      bridge:
+    volumes:
+            - /srv/bitcoin/:/home/bitcoin/.bitcoin/
+
+
+    
+  # alice:
+  #   container_name: alice
+  #   image: peterzen/dcrwallet
+  #   hostname: alice
+  #   networks:
+  #     bridge:
+  #   volumes:
+  #     - dcrwallet_alice:/root/
+  #   links: 
+  #     - dcrd
+  #   entrypoint:
+  #     - dcrwallet
+  #     - "--testnet"
+  #     - "--pass=wallet"
+  #     - "--dcrdusername=gcUGfbMiULCnMm5OkmtDiS845GI="
+  #     - "--dcrdpassword=azU+CHeww4WgmBTtRrmyoahL81U="   
+  #     - "--cafile=~/.dcrwallet/dcrd.cert"
+  #     - "--rpcconnect=dcrd"
+  #     - "--username=rpc"
+  #     - "--password=0264a4798cfc71ad569a23e2f5c949b4e512837d7d3846"
+  #     - "--rpclisten=0.0.0.0:9110"
+  #     - "--grpclisten=0.0.0.0:19558"
+  #     - "--enablevoting"
+  #     - "--debuglevel=trace"
+  #   ports:
+  #     - 9110:9110
+  #     - 19558:19558
+
+  # bob:
+  #   container_name: bob
+  #   image: peterzen/dcrwallet
+  #   hostname: bob
+  #   networks:
+  #     bridge:
+  #   volumes:
+  #     - dcrwallet_bob:/root/
+  #   links: 
+  #     - dcrd
+  #   entrypoint:
+  #     - dcrwallet
+  #     - "--testnet"
+  #     - "--pass=wallet"
+  #     - "--dcrdusername=gcUGfbMiULCnMm5OkmtDiS845GI="
+  #     - "--dcrdpassword=azU+CHeww4WgmBTtRrmyoahL81U="   
+  #     - "--cafile=~/.dcrwallet/dcrd.cert"
+  #     - "--rpcconnect=dcrd"
+  #     - "--username=rpc"
+  #     - "--password=0264a4798cfc71ad569a23e2f5c949b4e512837d7d3846"
+  #     - "--rpclisten=0.0.0.0:9110"
+  #     - "--grpclisten=0.0.0.0:19559"
+  #     - "--enablevoting"
+  #     - "--debuglevel=trace"
+  #   ports:
+  #     - 9111:9111
+  #     - 19559:19559
+
+    
+networks:
+  bridge:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.175.0.0/16
+  
+
+volumes:
+  dcrd_mainnet:
+  dcrd_testnet:
+  bitcoind_mainnet:
+  bitcoind_testnet:
+  dcrwallet_alice:
+  dcrwallet_bob:
