@@ -1,3 +1,4 @@
+/* eslint-disable no-debugger, no-console  */
 import Doc, { WalletIcons } from './doc'
 import State from './state'
 import BasePage from './basepage'
@@ -42,7 +43,7 @@ export default class MarketsPage extends BasePage {
       'registrationStatus', 'regStatusTitle', 'regStatusMessage', 'regStatusConfsDisplay',
       'regStatusDex', 'confReq',
       // Order form.
-      'orderForm', 'priceBox', 'buyBttn', 'sellBttn', 'limitBttn', 'marketBttn',
+      'orderForm', 'priceBox', 'steppedOrderBox', 'buyBttn', 'sellBttn', 'limitBttn', 'marketBttn', 'steppedBttn',
       'tifBox', 'submitBttn', 'qtyField', 'rateField', 'orderErr',
       'baseWalletIcons', 'quoteWalletIcons', 'lotSize', 'rateStep', 'lotField',
       'tifNow', 'mktBuyBox', 'mktBuyLots', 'mktBuyField', 'minMktBuy', 'qtyBox',
@@ -150,9 +151,10 @@ export default class MarketsPage extends BasePage {
       this.setOrderVisibility()
       this.drawChartLines()
     })
+    const tabBttns = [page.limitBttn, page.marketBttn, page.steppedBttn]
     // const tifCheck = tifDiv.querySelector('input[type=checkbox]')
     bind(page.limitBttn, 'click', () => {
-      swapBttns(page.marketBttn, page.limitBttn)
+      selectBttn(page.limitBttn, tabBttns)
       this.setOrderVisibility()
       if (!page.rateField.value) return
       this.depthLines.input = [{
@@ -162,10 +164,20 @@ export default class MarketsPage extends BasePage {
       this.drawChartLines()
     })
     bind(page.marketBttn, 'click', () => {
-      swapBttns(page.limitBttn, page.marketBttn)
+      selectBttn(page.marketBttn, tabBttns)
       this.setOrderVisibility()
       this.setMarketBuyOrderEstimate()
       this.depthLines.input = []
+      this.drawChartLines()
+    })
+    bind(page.steppedBttn, 'click', () => {
+      selectBttn(page.steppedBttn, tabBttns)
+      this.setOrderVisibility()
+      if (!page.rateField.value) return
+      this.depthLines.input = [{
+        rate: page.rateField.value,
+        color: this.isSell() ? this.chart.theme.sellLine : this.chart.theme.buyLine
+      }]
       this.drawChartLines()
     })
     bind(page.maxOrd, 'click', () => {
@@ -313,6 +325,11 @@ export default class MarketsPage extends BasePage {
     return this.page.limitBttn.classList.contains('selected')
   }
 
+  /* isStepped is true if the user has selected the "stepped order" tab. */
+  isStepped () {
+    return this.page.steppedBttn.classList.contains('selected')
+  }
+
   /* hasFeePending is true if the fee payment is pending */
   hasFeePending () {
     const dex = this.market.dex
@@ -337,6 +354,10 @@ export default class MarketsPage extends BasePage {
       Doc.show(page.priceBox, page.tifBox, page.qtyBox, page.maxBox)
       Doc.hide(page.mktBuyBox)
       this.previewQuoteAmt(true)
+    } else if (this.isStepped()) {
+      Doc.show(page.steppedOrderBox, page.tifBox, page.qtyBox, page.maxBox)
+      Doc.hide(page.priceBox)
+      Doc.hide(page.mktBuyBox)
     } else {
       Doc.hide(page.tifBox, page.maxBox, page.priceBox)
       if (this.isSell()) {
@@ -1779,6 +1800,11 @@ function asAtoms (s) {
 function swapBttns (before, now) {
   before.classList.remove('selected')
   now.classList.add('selected')
+}
+
+function selectBttn (selectBttn, bttnList) {
+  bttnList.forEach(b => b.classList.remove('selected'))
+  selectBttn.classList.add('selected')
 }
 
 /*
