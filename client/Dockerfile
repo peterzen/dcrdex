@@ -6,19 +6,20 @@
 # $ docker volume create --name=dcrdex_data
 #
 # Run the docker image, mapping web access port.
-# $ docker run -d --rm -p 127.0.0.1:5758:5758 -v dcrdex_data:/root/.dexc user/dcrdex
+# $ docker run -d --rm -p 127.0.0.1:5758:5758 -v dcrdex_data:/dex/.dexc user/dcrdex
 #
 
 # frontend build
-FROM node:18 AS nodebuilder
+FROM node:19-buster-slim AS nodebuilder
 WORKDIR /root/dex
 COPY . .
+RUN apt-get update && apt-get install -y git
 WORKDIR /root/dex/client/webserver/site/
 RUN npm clean-install
 RUN npm run build
 
 # dexc binary build
-FROM golang:1.19 AS gobuilder
+FROM golang:1.19-alpine AS gobuilder
 COPY --from=nodebuilder /root/dex/ /root/dex/
 WORKDIR /root/dex/client/cmd/dexc/
 RUN CGO_ENABLED=0 GOOS=linux GO111MODULE=on go build
@@ -26,10 +27,12 @@ WORKDIR /root/dex/client/cmd/dexcctl/
 RUN CGO_ENABLED=0 GOOS=linux GO111MODULE=on go build
 
 # Final image
-FROM alpine:3.16
-WORKDIR /root
+FROM debian:buster-slim
+WORKDIR /dex
+RUN mkdir -p /dex/.dexc && chown 1000 /dex/.dexc
+USER 1000
 COPY --from=gobuilder /root/dex/client/cmd/dexc/dexc ./
 COPY --from=gobuilder /root/dex/client/cmd/dexcctl/dexcctl ./
 COPY --from=gobuilder /root/dex/client/webserver/site ./site
 EXPOSE 5758
-CMD [ "./dexc", "--webaddr=0.0.0.0:5758" ]
+CMD [ "./dexc", "--webaddr=0.0.0.0:5758", "--appdata", "/dex/.dexc" ]
