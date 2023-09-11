@@ -1,0 +1,25 @@
+version: '3.7'
+services:
+  dcrdex:
+    container_name: dcrdex
+    image: decred/dcrdex:v0.6.3
+    restart: unless-stopped
+    hostname: dcrdex
+    ports:
+      - "5758"
+    volumes:
+      - dcrdex_data:/dex/.dexc
+ #     - dcrdex_dexcctl:/dex/.dexcctl
+    entrypoint: [ "./dexc", "--webaddr=0.0.0.0:5758", "--rpcuser=dex", "--rpcpass=d3x", "--rpcaddr=0.0.0.0:5757", "--rpccert=/dex/.dexc/dcrdex.pem", "--rpckey=/dex/.dexc/dcrdex.key", "--rpc", "--experimental" ]
+
+  dcrdex_proxy:
+    build:
+      context: nginx
+      dockerfile: Dockerfile
+    ports:
+      - "80:80" 
+      - "443:443" 
+    restart: always
+
+volumes:
+  dcrdex_data:
