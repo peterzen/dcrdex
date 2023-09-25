@@ -1308,6 +1308,39 @@ func randomBalanceNote(assetID uint32) *core.BalanceNote {
 	}
 }
 
+func randomTipChangeNote(assetID uint32, tip uint64) *asset.TipChangeNote {
+	// rand.Seed(time.Now().UnixNano())
+	// randSdiff := uint64(rand.Int63n(120000001) + 120000000)
+
+	var data interface{}
+	// data = &dcr.TipChangePayload{
+	// 	TicketPrice: randSdiff,
+	// }
+	note := asset.TipChangeNote{AssetID: assetID, Tip: tip, Data: data}
+	return &note
+}
+
+func (c *TCore) runRandomTipChangeNotes() {
+	ticker := time.NewTicker(15 * time.Second)
+	defer ticker.Stop()
+
+	tip := uint64(800000)
+
+	for {
+		select {
+		case <-ticker.C:
+			tc := randomTipChangeNote(42, tip)
+			note := core.WalletNote{
+				Notification: db.NewNotification(core.NoteTypeWalletNote, core.TopicWalletNotification, "", "", db.Data),
+				Payload:      tc,
+			}
+			c.noteFeed <- &note
+			tip = tip + 1
+		default:
+		}
+	}
+}
+
 func (c *TCore) AssetBalance(assetID uint32) (*core.WalletBalance, error) {
 	balNote := randomBalanceNote(assetID)
 	balNote.Balance.Stamp = time.Now()
@@ -1981,8 +2014,115 @@ func (c *TCore) ApproveTokenFee(assetID uint32, version uint32, approval bool) (
 	return 0, nil
 }
 
+func randSdiff() uint64 {
+	rand.Seed(time.Now().UnixNano())
+	return uint64(rand.Int63n(12000000001) + 12000000000)
+}
+
+func randomTicket() *asset.Ticket {
+	var ticketStatuses = []asset.TicketStatus{
+		asset.TicketStatusLive,
+		asset.TicketStatusVoted,
+		// asset.TicketStatusMissed,
+		// asset.TicketStatusExpired,
+		asset.TicketStatusUnspent,
+		// asset.TicketStatusRevoked,
+	}
+	randomIndex := rand.Intn(len(ticketStatuses))
+
+	return &asset.Ticket{
+		Tx: asset.TicketTransaction{
+			Hash:        "00000000000000000000000000000000000000",
+			TicketPrice: randSdiff(),
+			Fees:        0,
+			Stamp:       0,
+			BlockHeight: 100000,
+		},
+		Status:  ticketStatuses[randomIndex],
+		Spender: "",
+	}
+}
+
 func (c *TCore) StakeStatus(assetID uint32) (*asset.TicketStakingStatus, error) {
-	return nil, nil
+
+	res := asset.TicketStakingStatus{
+		TicketPrice:   randSdiff(),
+		VotingSubsidy: 120000000,
+		VSP:           "",
+		IsRPC:         false,
+		Tickets: []*asset.Ticket{
+			randomTicket(),
+			randomTicket(),
+			randomTicket(),
+			randomTicket(),
+			randomTicket(),
+			randomTicket(),
+		},
+		Stances: asset.Stances{
+			Agendas: []*asset.TBAgenda{
+				{
+					ID:          "agenda1",
+					Description: "Agenda 1 description",
+					Choices: []*asset.TBChoice{
+						{
+							ID:          "agenda-1-choice-1",
+							Description: "abstain",
+						},
+						{
+							ID:          "agenda-1-choice-2",
+							Description: "yes",
+						},
+						{
+							ID:          "agenda-1-choice-3",
+							Description: "no",
+						},
+					},
+				},
+				{
+					ID:          "agenda2",
+					Description: "Agenda 2 description",
+					Choices: []*asset.TBChoice{
+						{
+							ID:          "agenda-2-choice-1",
+							Description: "abstain",
+						},
+						{
+							ID:          "agenda-2-choice-2",
+							Description: "yes",
+						},
+						{
+							ID:          "agenda-2-choice-3",
+							Description: "no",
+						},
+					},
+				},
+			},
+			TreasurySpends: []*asset.TBTreasurySpend{
+				{
+					Hash:          "000000000000000000000000000000000000000001",
+					Value:         1,
+					CurrentPolicy: "policy",
+				},
+				{
+					Hash:          "000000000000000000000000000000000000000002",
+					Value:         2,
+					CurrentPolicy: "policy",
+				},
+				{
+					Hash:          "000000000000000000000000000000000000000003",
+					Value:         3,
+					CurrentPolicy: "policy",
+				},
+				{
+					Hash:          "000000000000000000000000000000000000000004",
+					Value:         4,
+					CurrentPolicy: "policy",
+				},
+			},
+		},
+		Stats: asset.TicketStats{},
+	}
+	return &res, nil
 }
 
 func (c *TCore) SetVSP(assetID uint32, addr string) error {
@@ -1998,7 +2138,19 @@ func (c *TCore) SetVotingPreferences(assetID uint32, choices, tSpendPolicy, trea
 }
 
 func (c *TCore) ListVSPs(assetID uint32) ([]*asset.VotingServiceProvider, error) {
-	return nil, nil
+	vsps := []*asset.VotingServiceProvider{
+		{
+			URL:           "https://dcr2.example.com",
+			FeePercentage: 0.1,
+			Voting:        12345,
+		},
+		{
+			URL:           "https://dcr1.example.com",
+			FeePercentage: 0.3,
+			Voting:        987654,
+		},
+	}
+	return vsps, nil
 }
 
 func (c *TCore) TicketPage(assetID uint32, scanStart int32, n, skipN int) ([]*asset.Ticket, error) {
@@ -2072,6 +2224,8 @@ func TestServer(t *testing.T) {
 	if randomNotes {
 		go tCore.runRandomNotes()
 	}
+
+	go tCore.runRandomTipChangeNotes()
 
 	cm.Wait()
 }
