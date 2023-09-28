@@ -242,6 +242,12 @@
     width: 4em;
   }
 
+  #purchaseTicketsForm {
+    button:disabled {
+      opacity: 0.4;
+    }
+  }
+
   #vspDisplay {
     #vspEditIcon {
       display: none;

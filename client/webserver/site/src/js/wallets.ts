@@ -979,6 +979,11 @@ export default class WalletsPage extends BasePage {
   }
 
   purchaserInputChanged () {
+    const asset = app().assets[this.selectedAssetID]
+    const { wallet, unitInfo } = asset
+    const purchaserBal = wallet.balance.available / unitInfo.conventional.conversionFactor
+    const ticketPrice = this.stakeStatus.ticketPrice / unitInfo.conventional.conversionFactor
+
     const page = this.page
     const n = parseInt(page.purchaserInput.value || '0')
     if (n <= 1) {
@@ -986,6 +991,11 @@ export default class WalletsPage extends BasePage {
       return
     }
     page.purchaserInput.value = String(n)
+    if (n && n >= purchaserBal / ticketPrice) {
+      page.purchaserSubmit.removeAttribute('disabled')
+    } else {
+      page.purchaserSubmit.setAttribute('disabled', 'disabled')
+    }
   }
 
   async purchaseTickets () {
