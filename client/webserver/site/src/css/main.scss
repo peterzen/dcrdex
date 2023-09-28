@@ -91,6 +91,11 @@ a.logo-icon {
   background-image: url("/img/softened-icon.png");
 }
 
+a.plain {
+  color: $font-color-light;
+  text-decoration: none;
+}
+
 div.main {
   display: flex;
   flex-grow: 1;

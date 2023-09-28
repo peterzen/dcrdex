@@ -13,6 +13,11 @@ body.dark {
     background-image: url("/img/softened-icon-dark.png");
   }
 
+  a.plain {
+    color: $font-color-dark;
+    text-decoration: none;
+  }
+
   .offwhite {
     color: #a1a1a1;
   }
