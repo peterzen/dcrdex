@@ -10,7 +10,7 @@ set -e
 
 source $(dirname "$0")/common.sh
 
-# A directory containing metadata files
+# A directory for source files e.g. images and metadata files
 SRC_DIR="./src"
 
 # The DEB_DIR represents the root directory in our target system. The directory
