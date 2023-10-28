@@ -3,7 +3,7 @@
 # in this directory.
 
 # pick up the release tag from git
-VER=$(git describe --tags --abbrev=0 | sed -e 's/^v//')
+VER=$(git describe --tags --abbrev=0 --always | sed -e 's/^v//')
 META= # "release"
 REV="0"
 
