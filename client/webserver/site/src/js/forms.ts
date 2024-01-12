@@ -29,7 +29,8 @@ import {
   WalletInfo,
   Token,
   WalletCreationNote,
-  CoreNote
+  CoreNote,
+  WalletTransaction
 } from './registry'
 import { XYRangeHandler } from './opts'
 
@@ -1994,6 +1995,8 @@ export class DepositAddress {
   async newDepositAddress () {
     const page = this.page
     Doc.hide(page.depositErr)
+    Doc.hide(page.depositTxContainer)
+    Doc.show(page.depositAddressContainer)
     const loaded = app().loading(this.form)
     const res = await postJSON('/api/depositaddress', {
       assetID: this.assetID
@@ -2020,6 +2023,22 @@ export class DepositAddress {
       .catch((reason) => {
         console.error('Unable to copy: ', reason)
       })
+  }
+
+  handleIncomingTx (assetID: number, tx: WalletTransaction, newTx: boolean) {
+    console.log('assetID: ', assetID, 'tx: ', tx, 'newTx: ', newTx)
+    if (assetID !== this.assetID) return
+    if (tx.recipient !== this.page.depositAddress.textContent) return
+    this.showIncomingTx(tx, newTx)
+  }
+
+  showIncomingTx (tx: WalletTransaction, newTx: boolean) {
+    const page = this.page
+    page.depositTxID.textContent = tx.id
+    page.depositTxAmount.textContent = Doc.formatCoinValue(tx.amount, app().unitInfo(this.assetID))
+    page.depositTxStatus.textContent = newTx ? 'pending' : 'confirmed'
+    Doc.show(page.depositTxContainer)
+    Doc.hide(page.depositAddressContainer)
   }
 }
 

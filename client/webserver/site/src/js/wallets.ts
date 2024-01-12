@@ -1658,6 +1658,7 @@ export default class WalletsPage extends BasePage {
   }
 
   handleTxNote (tx: WalletTransaction, newTx: boolean) {
+    this.depositAddrForm.handleIncomingTx(this.selectedAssetID, tx, newTx)
     if (newTx) {
       if (!this.oldestTx) {
         Doc.show(this.page.txHistoryTable)

@@ -5233,7 +5233,7 @@ func (btc *intermediaryWallet) checkPendingTxs(tip uint64) {
 					}
 				}
 
-				btc.addTxToHistory(asset.Receive, txHash, toSatoshi(tx.Amount), fee, nil, nil, true)
+				btc.addTxToHistory(asset.Receive, txHash, toSatoshi(tx.Amount), fee, nil, &tx.Address, true)
 			}
 		}
 	}
