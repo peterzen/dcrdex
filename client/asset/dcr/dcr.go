@@ -35,6 +35,7 @@ import (
 	"decred.org/dcrwallet/v3/wallet"
 	_ "decred.org/dcrwallet/v3/wallet/drivers/bdb"
 	"github.com/decred/dcrd/blockchain/stake/v5"
+	"github.com/decred/dcrd/blockchain/standalone/v2"
 	blockchain "github.com/decred/dcrd/blockchain/standalone/v2"
 	"github.com/decred/dcrd/chaincfg/chainhash"
 	"github.com/decred/dcrd/chaincfg/v3"
@@ -3263,7 +3264,7 @@ func (dcr *ExchangeWallet) AuditContract(coinID, contract, txData dex.Bytes, reb
 		if err != nil {
 			return nil, fmt.Errorf("invalid contract tx data: %w", err)
 		}
-		if err = blockchain.CheckTransactionSanity(contractTx, uint64(dcr.chainParams.MaxTxSize)); err != nil {
+		if err = standalone.CheckTransactionSanity(contractTx, uint64(dcr.chainParams.MaxTxSize)); err != nil {
 			return nil, fmt.Errorf("invalid contract tx data: %w", err)
 		}
 		if checkHash := contractTx.TxHash(); checkHash != *txHash {
