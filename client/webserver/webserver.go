@@ -1431,7 +1431,7 @@ func userAppVersion(fullVersion string, semVerOnly bool) string {
 		return fullVersion // return the full version as is
 	}
 
-	if semVerOnly {
+	if semVerOnly || pre == "" {
 		return fmt.Sprintf("%d.%d.%d", major, minor, patch)
 	}
 
