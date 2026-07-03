@@ -15,6 +15,7 @@ permissions:
 jobs:
   build-native:
     name: Native build (exe + MSI)
+    if: github.event_name == 'workflow_dispatch'
     runs-on: windows-latest
     steps:
       - name: Check out source
@@ -59,6 +60,7 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 #v4.6.2
         with:
           name: bisonw-desktop-windows-exe
+          if-no-files-found: error
           path: |
             client/cmd/bisonw-desktop/build/windows/bisonw-desktop.exe
             client/cmd/bisonw-desktop/build/windows/WebView2Loader.dll
@@ -67,7 +69,9 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 #v4.6.2
         with:
           name: bisonw-desktop-windows-msi
-          path: client/cmd/bisonw-desktop/build/msi/*.msi
+          if-no-files-found: error
+          # WiX writes the MSI into a culture subdirectory (en-US).
+          path: client/cmd/bisonw-desktop/build/msi/**/*.msi
 
   build-cross:
     name: Cross-compile exe (Linux/Docker)
@@ -99,4 +103,5 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 #v4.6.2
         with:
           name: bisonw-desktop-windows-exe-cross
+          if-no-files-found: error
           path: build/
