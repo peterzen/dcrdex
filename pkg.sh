@@ -3,8 +3,8 @@
 set -e
 
 # For release, remove pre-release info, and set metadata to "release".
-VER="1.1.0" # pre, beta, rc1, etc.
-META="release"
+VER="1.1.0-rc3" # pre, beta, rc1, etc.
+META="release.local" # "release"
 
 export CGO_ENABLED=0
 export GOWORK=off
