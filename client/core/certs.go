@@ -23,6 +23,27 @@ wtXxBmKZLaFsxKCm7w==
 -----END CERTIFICATE-----
 `)
 
+var dexDecredOnlineCert = []byte(`-----BEGIN CERTIFICATE-----
+MIIDAzCCAmWgAwIBAgIRAOOUS686pqLHcRE68vgOlqcwCgYIKoZIzj0EAwQwNDEi
+MCAGA1UEChMZZGNyZGV4IGF1dG9nZW5lcmF0ZWQgY2VydDEOMAwGA1UEAxMFZGV4
+LTEwHhcNMjYwNjMwMjMxMzA1WhcNMzYwNjI4MjMxMzA1WjA0MSIwIAYDVQQKExlk
+Y3JkZXggYXV0b2dlbmVyYXRlZCBjZXJ0MQ4wDAYDVQQDEwVkZXgtMTCBmzAQBgcq
+hkjOPQIBBgUrgQQAIwOBhgAEALremiMwXw9sQNjTC53vE9kMF/JaGo4mJbEZslt3
+CkZMLyj/bGUcYdGm0qJUNkZ1mwRsQYl5HIShMebL5/dPWINwAU8tYYUx9C8j/Kk7
+jJXXdMvcSF9p6lN2wzvXyShwry0M1WGKncT6KFpdfWhCyE6gOaHCgXcnKrc+bLsK
+qkb3DnZso4IBEzCCAQ8wDgYDVR0PAQH/BAQDAgKkMA8GA1UdEwEB/wQFMAMBAf8w
+HQYDVR0OBBYEFK+ifq8NsUfTfN987EAGLMo9zupGMIHMBgNVHREEgcQwgcGCBWRl
+eC0xgglsb2NhbGhvc3SCEWRleC5kZWNyZWQub25saW5lhwR/AAABhxAAAAAAAAAA
+AAAAAAAAAAABhwQu4N39hwSsEQABhwSsEgABhwQKCgoBhxAqAQT4HBqdQwAAAAAA
+AAABhxD+gAAAAAAAACAre1yFr85lhxD+gAAAAAAAAFAhhP/+91tXhxD+gAAAAAAA
+AOS9LP/+y53jhxD+gAAAAAAAAHDr4//+S8DjhxD+gAAAAAAAANjH4P/+aofFMAoG
+CCqGSM49BAMEA4GLADCBhwJCALEUH0znqyVvgg12HpaA2CKoWUIkYGLgg9wcQ7Lm
+6PEA2ouGvRMG2rKQUvO9uod2pht5cE6XnkdBj8e7YF5/yCgEAkEI7KL6ClfqSI99
+y/E929Mgmz4r6ZSsSsKYHcSRY9GzdXpWFBuOo+gvmtmSON+tj4SptaJzEPyyF2Hh
+spdTr/EbpA==
+-----END CERTIFICATE-----
+`)
+
 var simnetHarnessCert = []byte(`-----BEGIN CERTIFICATE-----
 MIICpTCCAgagAwIBAgIQZMfxMkSi24xMr4CClCODrzAKBggqhkjOPQQDBDBJMSIw
 IAYDVQQKExlkY3JkZXggYXV0b2dlbmVyYXRlZCBjZXJ0MSMwIQYDVQQDExp1YnVu
@@ -44,7 +65,8 @@ vF8Ti1x2vTkD
 
 var CertStore = map[dex.Network]map[string][]byte{
 	dex.Mainnet: {
-		"dex.decred.org:7232": dexDotDecredCert,
+		"dex.decred.org:7232":    dexDotDecredCert,
+		"dex.decred.online:7232": dexDecredOnlineCert,
 	},
 	dex.Testnet: {
 		"bison.exchange:17232": nil, // Uses certificate authority

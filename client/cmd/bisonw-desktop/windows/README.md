@@ -1,5 +1,14 @@
 # Windows build
 
+## GitHub Actions
+
+The [Build Windows workflow](../../../../.github/workflows/build-windows.yml)
+builds the exe and the MSI on a Windows runner (and additionally
+cross-compiles the exe via the Docker path below). It can be triggered
+manually from the Actions tab and runs automatically on pull requests that
+touch the Windows build scripts. Binaries are not signed in CI; to skip
+signing when packaging locally, run `windows\pkg-windows.cmd --no-sign`.
+
 ## Native build
 
 ### Setting up the build environment
