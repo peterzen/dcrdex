@@ -227,6 +227,9 @@ func (n *testNode) txOpts(ctx context.Context, val, maxGas uint64, maxFeeRate, t
 	}
 	n.lastTxOptsMaxFeeRate = maxFeeRate
 	n.lastTxOptsTipRate = tipRate
+	// The fixed tip below is baked into many test fixtures (e.g. gasless
+	// redeem viability decisions). Assertions about the tip passed to txOpts
+	// should use lastTxOptsTipRate rather than the built TransactOpts.
 	txOpts := newTxOpts(ctx, n.addr, val, maxGas, maxFeeRate, dexeth.GweiToWei(2))
 	txOpts.Nonce = big.NewInt(1)
 	return txOpts, nil
@@ -3081,6 +3084,10 @@ func testSwap(t *testing.T, assetID uint32) {
 		gases = &tokenGasesV0
 	}
 
+	// The swap fee rate (assetCfg.MaxFeeRate) is the tx's gas fee cap and
+	// must not be below the current base fee, or Swap refuses to broadcast.
+	node.baseFee = dexeth.GweiToWei(5)
+
 	receivingAddress := "0x2b84C791b79Ee37De042AD2ffF1A253c3ce9bc27"
 	node.tContractor.initTx = types.NewTx(&types.DynamicFeeTx{})
 
@@ -3341,6 +3348,37 @@ func testSwap(t *testing.T, assetID uint32) {
 		LockChange:   false,
 	}
 	testSwap("v1", swaps, false)
+
+	// An assigned fee rate below the current base fee would produce a tx
+	// that cannot be mined. With available balance, Swap raises the fee cap
+	// to 2*baseFee instead.
+	node.baseFee = dexeth.GweiToWei(assetCfg.MaxFeeRate + 1)
+	inputs = refreshWalletAndFundCoins(5, []uint64{ethToGwei(2) + (2 * 200 * dexeth.InitGas(1, 1))}, 2)
+	swaps = asset.Swaps{
+		Inputs:       inputs,
+		AssetVersion: assetCfg.Version,
+		Contracts:    contracts,
+		FeeRate:      assetCfg.MaxFeeRate,
+		LockChange:   false,
+	}
+	testSwap("fee rate rescue", swaps, false)
+	if wantCap := dexeth.GweiToWei(2 * (assetCfg.MaxFeeRate + 1)); node.lastTxOptsMaxFeeRate.Cmp(wantCap) != 0 {
+		t.Fatalf("fee cap not raised to 2*baseFee. wanted %s, got %s", wantCap, node.lastTxOptsMaxFeeRate)
+	}
+
+	// Without enough available balance to raise the cap to a minable level,
+	// Swap must refuse to broadcast.
+	node.baseFee = dexeth.GweiToWei(1_000_000)
+	inputs = refreshWalletAndFundCoins(5, []uint64{ethToGwei(2) + (2 * 200 * dexeth.InitGas(1, 1))}, 2)
+	swaps = asset.Swaps{
+		Inputs:       inputs,
+		AssetVersion: assetCfg.Version,
+		Contracts:    contracts,
+		FeeRate:      assetCfg.MaxFeeRate,
+		LockChange:   false,
+	}
+	testSwap("fee rate rescue unfunded", swaps, true)
+	node.baseFee = dexeth.GweiToWei(5)
 }
 
 func TestPreRedeem(t *testing.T) {
