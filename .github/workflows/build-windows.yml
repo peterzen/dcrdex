@@ -1,0 +1,102 @@
+name: Build Windows
+
+on:
+  # manually trigger the workflow from the Actions tab
+  workflow_dispatch:
+  # validate the Windows build when its scripts change
+  pull_request:
+    paths:
+      - 'client/cmd/bisonw-desktop/windows/**'
+      - '.github/workflows/build-windows.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build-native:
+    name: Native build (exe + MSI)
+    runs-on: windows-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 #v6.0.0
+
+      - name: Set up Go
+        uses: actions/setup-go@4dc6199c7b1a012772edbd06daecab0f50c9053c #v6.1.0
+        with:
+          go-version: '1.24'
+          cache-dependency-path: |
+            go.sum
+            client/cmd/bisonw-desktop/go.sum
+
+      - name: Set up Node
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 #v5.0.0
+        with:
+          node-version: 22
+
+      - name: Build site bundle
+        working-directory: client/webserver/site
+        run: |
+          npm clean-install
+          npm run build
+
+      # CGO needs a gcc; use the ucrt64 toolchain from the preinstalled
+      # MSYS2, matching setup-windows-stage2.ps1.
+      - name: Install MinGW toolchain
+        shell: pwsh
+        run: |
+          C:\msys64\usr\bin\bash.exe -lc 'pacman --noconfirm -Syuu'
+          C:\msys64\usr\bin\bash.exe -lc 'pacman --noconfirm -S --needed mingw-w64-ucrt-x86_64-gcc'
+          Add-Content $env:GITHUB_PATH 'C:\msys64\ucrt64\bin'
+
+      # Builds the exe (build-windows.cmd) and the MSI (WiX via dotnet
+      # build). No code signing in CI: there is no certificate available.
+      - name: Build exe and MSI
+        working-directory: client/cmd/bisonw-desktop
+        shell: cmd
+        run: windows\pkg-windows.cmd --no-sign
+
+      - name: Upload exe
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 #v4.6.2
+        with:
+          name: bisonw-desktop-windows-exe
+          path: |
+            client/cmd/bisonw-desktop/build/windows/bisonw-desktop.exe
+            client/cmd/bisonw-desktop/build/windows/WebView2Loader.dll
+
+      - name: Upload MSI
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 #v4.6.2
+        with:
+          name: bisonw-desktop-windows-msi
+          path: client/cmd/bisonw-desktop/build/msi/*.msi
+
+  build-cross:
+    name: Cross-compile exe (Linux/Docker)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 #v6.0.0
+
+      - name: Set up Node
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 #v5.0.0
+        with:
+          node-version: 22
+
+      - name: Build site bundle
+        working-directory: client/webserver/site
+        run: |
+          npm clean-install
+          npm run build
+
+      - name: Build exe with Docker
+        run: docker build -t bisonw-desktop-windows -f client/cmd/bisonw-desktop/windows/Dockerfile .
+
+      - name: Extract build output
+        run: |
+          mkdir -p build
+          docker run --rm bisonw-desktop-windows tar -cf - -C /out . | tar -xf - -C ./build
+
+      - name: Upload exe
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 #v4.6.2
+        with:
+          name: bisonw-desktop-windows-exe-cross
+          path: build/
