@@ -27,11 +27,11 @@ jobs:
 
         - name: Build deb package
           working-directory: client/cmd/bisonw-desktop
-          run: pkg/pkg-debian.sh
+          run: linux/pkg-debian.sh
 
         - name: Prepare snapcraft.yml
           working-directory: client/cmd/bisonw-desktop
-          run: pkg/prepare-snap.sh
+          run: linux/prepare-snap.sh
 
         - name: Build snap package
           uses: snapcore/action-build@3bdaa03e1ba6bf59a65f84a751d943d549a54e79 # v1.3.0
