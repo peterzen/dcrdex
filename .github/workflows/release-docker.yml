@@ -53,6 +53,6 @@ jobs:
             --tag "$IMAGE" \
             --output "type=registry" .
           # Print the published reference with its manifest digest, for
-          # pinning in dcrdex-umbrel/docker-compose.yml.
+          # pinning in decred-dcrdex/docker-compose.yml.
           DIGEST="$(docker buildx imagetools inspect "$IMAGE" --format '{{json .Manifest.Digest}}' | tr -d '"')"
           echo "Published ${IMAGE}@${DIGEST}"

@@ -2,7 +2,7 @@
 
 The `bisonwallet-test` image referenced by `docker-compose.yml` is built and published to the GitHub Container Registry (`ghcr.io/<repo-owner>/bisonwallet-test`) by the `.github/workflows/release-docker.yml` workflow, which runs when a release is published or on manual dispatch (the `tag` input sets the image tag, e.g. `v1.1.0-rc3`).
 
-The workflow prints the published image reference with its sha256 manifest digest at the end of the build step; copy it into the `image:` line of `docker-compose.yml` to pin the umbrel config to the exact image that was built.
+The workflow prints the published image reference with its sha256 manifest digest at the end of the build step; copy it into the `image:` line of `decred-dcrdex/docker-compose.yml` to pin the umbrel config to the exact image that was built.
 
 Note that the first push creates the GHCR package as **private**; it must be switched to public once (GitHub profile → Packages → `bisonwallet-test` → Package settings → Change visibility) or umbrelOS will not be able to pull it.
 

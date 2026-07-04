@@ -7,7 +7,7 @@ services:
       PROXY_AUTH_ADD: "false"
 # The app proxy resolves the web container as <app-id>_web_1, so this
 # must match the id in umbrel-app.yml.
-      APP_HOST: dcrdex-umbrel_web_1
+      APP_HOST: decred-dcrdex_web_1
       APP_PORT: 5758
 
   web:

@@ -1,5 +1,5 @@
 manifestVersion: 1
-id: dcrdex-umbrel
+id: decred-dcrdex
 category: Finance
 name: Bison Wallet TEST
 version: "1.1.0-rc3"
