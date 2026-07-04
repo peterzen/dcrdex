@@ -15,7 +15,7 @@ env:
   # Publish to GHCR under the repository owner, so forks publish to
   # their own namespace with the built-in GITHUB_TOKEN and no external
   # registry credentials.
-  IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/bisonwallet
+  IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/bisonwallet-test
 
 permissions:
   contents: read

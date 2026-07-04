@@ -1,10 +1,10 @@
 # Publishing Docker image
 
-The `bisonwallet` image referenced by `docker-compose.yml` is built and published to the GitHub Container Registry (`ghcr.io/<repo-owner>/bisonwallet`) by the `.github/workflows/release-docker.yml` workflow, which runs when a release is published or on manual dispatch (the `tag` input sets the image tag, e.g. `v1.1.0-rc3`).
+The `bisonwallet-test` image referenced by `docker-compose.yml` is built and published to the GitHub Container Registry (`ghcr.io/<repo-owner>/bisonwallet-test`) by the `.github/workflows/release-docker.yml` workflow, which runs when a release is published or on manual dispatch (the `tag` input sets the image tag, e.g. `v1.1.0-rc3`).
 
 The workflow prints the published image reference with its sha256 manifest digest at the end of the build step; copy it into the `image:` line of `docker-compose.yml` to pin the umbrel config to the exact image that was built.
 
-Note that the first push creates the GHCR package as **private**; it must be switched to public once (GitHub profile → Packages → `bisonwallet` → Package settings → Change visibility) or umbrelOS will not be able to pull it.
+Note that the first push creates the GHCR package as **private**; it must be switched to public once (GitHub profile → Packages → `bisonwallet-test` → Package settings → Change visibility) or umbrelOS will not be able to pull it.
 
 Alternatively, the image can be built and published manually using the following steps.  This requires the use of [BuildKit](https://docs.docker.com/build/buildkit/), which is part of recent Docker releases.
 
@@ -23,7 +23,7 @@ git checkout release-v1.x.x
 docker buildx create --use
 docker buildx build -f client/Dockerfile.release \
   --platform linux/arm64,linux/amd64 \
-  --tag ghcr.io/<repo-owner>/bisonwallet:v1.x.x \
+  --tag ghcr.io/<repo-owner>/bisonwallet-test:v1.x.x \
   --output "type=registry"  .
 ```
 
