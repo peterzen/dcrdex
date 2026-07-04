@@ -72,7 +72,11 @@ build_targets (){
       fi
     fi
 
-    npm run make --platform=${OS} --arch=${ARCH}
+    # Electron names the amd64 architecture x64. The "--" is required:
+    # without it npm consumes the flags itself and electron-forge silently
+    # packages for the host architecture on every iteration.
+    EARCH=${ARCH/amd64/x64}
+    npm run make -- --platform=${OS} --arch=${EARCH}
 
     cp -R "./out/make/BisonWallet.dmg" "../installers/bisonw-desktop-${OS}-${ARCH}-v${VER}.dmg"
 

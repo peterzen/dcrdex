@@ -1,0 +1,109 @@
+name: Build macOS
+
+on:
+  # manually trigger the workflow from the Actions tab
+  workflow_dispatch:
+  # validate the macOS packaging when its scripts change
+  pull_request:
+    paths:
+      - 'client/cmd/bisonw-desktop/electron/**'
+      - '.github/workflows/build-macos.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build-binary:
+    name: Standalone bisonw binaries (amd64 + arm64)
+    runs-on: macos-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 #v6.0.0
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Set up Go
+        uses: actions/setup-go@4dc6199c7b1a012772edbd06daecab0f50c9053c #v6.1.0
+        with:
+          go-version: '1.24'
+          cache-dependency-path: go.sum
+
+      - name: Set up Node
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 #v5.0.0
+        with:
+          node-version: 22
+
+      - name: Build site bundle
+        working-directory: client/webserver/site
+        run: |
+          npm clean-install
+          npm run build
+
+      - name: Build binaries
+        working-directory: client/cmd/bisonw
+        run: |
+          VER=$(git describe --tags --abbrev=0 --always | sed -e 's/^v//')
+          LDFLAGS="-s -w -X main.Version=${VER}"
+          mkdir -p build/macos
+          CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -trimpath -o build/macos/bisonw-darwin-amd64 -ldflags "$LDFLAGS"
+          CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -trimpath -o build/macos/bisonw-darwin-arm64 -ldflags "$LDFLAGS"
+
+      - name: Upload amd64 binary
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 #v4.6.2
+        with:
+          name: bisonw-macos-amd64-bin
+          if-no-files-found: error
+          path: client/cmd/bisonw/build/macos/bisonw-darwin-amd64
+
+      - name: Upload arm64 binary
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 #v4.6.2
+        with:
+          name: bisonw-macos-arm64-bin
+          if-no-files-found: error
+          path: client/cmd/bisonw/build/macos/bisonw-darwin-arm64
+
+  build-dmg:
+    name: Electron app (DMG, amd64 + arm64)
+    runs-on: macos-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 #v6.0.0
+
+      - name: Set up Go
+        uses: actions/setup-go@4dc6199c7b1a012772edbd06daecab0f50c9053c #v6.1.0
+        with:
+          go-version: '1.24'
+          cache-dependency-path: go.sum
+
+      - name: Set up Node
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 #v5.0.0
+        with:
+          node-version: 22
+
+      # The electron package.json "prepare" hook runs prepare.sh, which
+      # needs Go and Node already on PATH.
+      - name: Install electron deps
+        working-directory: client/cmd/bisonw-desktop/electron
+        run: npm clean-install
+
+      # pkg.sh builds the site bundle, the bisonw binary, and the DMG for
+      # each of darwin/amd64 and darwin/arm64. No code signing in CI:
+      # forge.config.js only signs/notarizes when APPLE_* creds are set.
+      - name: Build DMGs
+        working-directory: client/cmd/bisonw-desktop
+        run: ./electron/pkg.sh
+
+      - name: Upload amd64 DMG
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 #v4.6.2
+        with:
+          name: bisonw-desktop-macos-amd64-dmg
+          if-no-files-found: error
+          path: client/cmd/bisonw-desktop/installers/bisonw-desktop-darwin-amd64-*.dmg
+
+      - name: Upload arm64 DMG
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 #v4.6.2
+        with:
+          name: bisonw-desktop-macos-arm64-dmg
+          if-no-files-found: error
+          path: client/cmd/bisonw-desktop/installers/bisonw-desktop-darwin-arm64-*.dmg
