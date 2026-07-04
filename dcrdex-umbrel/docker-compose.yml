@@ -11,9 +11,9 @@ services:
       APP_PORT: 5758
 
   web:
-# This image is published by .github/workflows/release-docker.yml. Pin
-# the sha256 digest once the tag is on Docker Hub.
-    image: decred/bisonwallet:v1.1.0-rc3
+# This image is published by the release-docker.yml workflow, which
+# prints the digest to pin here after each publish.
+    image: ghcr.io/peterzen/bisonwallet:v1.1.0-rc3
     restart: on-failure
     volumes:
       - ${APP_DATA_DIR}/data:/dex/.dexc
