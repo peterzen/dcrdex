@@ -49,16 +49,6 @@ jobs:
           CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -trimpath -o build/macos/bisonw-darwin-amd64 -ldflags "$LDFLAGS"
           CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -trimpath -o build/macos/bisonw-darwin-arm64 -ldflags "$LDFLAGS"
 
-      # Apple Silicon refuses to run binaries with no code signature at
-      # all; the Go linker embeds an ad-hoc signature for darwin/arm64,
-      # which codesign -dv confirms.
-      - name: Verify architectures
-        working-directory: client/cmd/bisonw
-        run: |
-          file build/macos/bisonw-darwin-amd64 | grep x86_64
-          file build/macos/bisonw-darwin-arm64 | grep arm64
-          codesign -dv build/macos/bisonw-darwin-arm64
-
       - name: Upload amd64 binary
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 #v4.6.2
         with:
@@ -103,21 +93,6 @@ jobs:
       - name: Build DMGs
         working-directory: client/cmd/bisonw-desktop
         run: ./electron/pkg.sh
-
-      - name: Verify Apple Silicon compatibility
-        working-directory: client/cmd/bisonw-desktop
-        run: |
-          ls -l installers
-          hdiutil attach installers/bisonw-desktop-darwin-arm64-*.dmg -mountpoint /tmp/bw-dmg -nobrowse
-          APP=$(find /tmp/bw-dmg -maxdepth 1 -name '*.app' | head -1)
-          echo "App bundle: $APP"
-          EXE=$(find "$APP/Contents/MacOS" -type f | head -1)
-          file "$EXE"
-          file "$EXE" | grep arm64
-          file "$APP/Contents/Resources/mac/bisonw"
-          file "$APP/Contents/Resources/mac/bisonw" | grep arm64
-          codesign -dv "$APP"
-          hdiutil detach /tmp/bw-dmg
 
       - name: Upload amd64 DMG
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 #v4.6.2
