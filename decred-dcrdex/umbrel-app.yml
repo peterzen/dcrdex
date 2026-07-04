@@ -1,8 +1,8 @@
 manifestVersion: 1
-id: dcrdex-umbrel
+id: decred-dcrdex
 category: Finance
-name: Bison Wallet
-version: "1.0.5"
+name: Bison Wallet TEST
+version: "1.1.0-rc3"
 tagline: Multi-asset cryptocurrency wallet with integrated DEX
 description: >-
   Trade Bitcoin, USDC, Ethereum, Decred, Dogecoin, Zcash and more peer-to-peer using atomic swaps.
