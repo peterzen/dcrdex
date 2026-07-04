@@ -13,7 +13,7 @@ services:
   web:
 # This image is published by the release-docker.yml workflow, which
 # prints the digest to pin here after each publish.
-    image: ghcr.io/peterzen/bisonwallet-test:v1.1.0-rc3
+    image: ghcr.io/peterzen/bisonwallet-test:v1.1.0-rc3@sha256:06d2e852cb7676d48a71101f5f4202aba92136a227285524371faa480959a3c2
     restart: on-failure
     volumes:
       - ${APP_DATA_DIR}/data:/dex/.dexc
